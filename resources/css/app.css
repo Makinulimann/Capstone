@@ -1,0 +1,93 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: Roboto, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+@layer base {
+  *, ::after, ::before, ::backdrop, ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+}
+
+@layer utilities {
+  body, html {
+    --font-sans: Roboto, ui-sans-serif, system-ui, sans-serif,
+      'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+      'Noto Color Emoji';
+  }
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #1a1a1a;
+
+  --primary: #581C87; /* ungu tua */
+  --primary-foreground: #ffffff;
+
+  --secondary: #9333EA; /* ungu terang */
+  --secondary-foreground: #ffffff;
+
+  --muted: #797F88; /* abu-abu kebiruan */
+  --muted-foreground: #ffffff;
+
+  --border: #d1d5db;
+  --input: #e5e7eb;
+  --ring: #581C87;
+
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: #1a1a1a;
+  --foreground: #ffffff;
+
+  --primary: #9333EA;
+  --primary-foreground: #1a1a1a;
+
+  --secondary: #581C87;
+  --secondary-foreground: #ffffff;
+
+  --muted: #797F88;
+  --muted-foreground: #ffffff;
+
+  --border: #2d2d2d;
+  --input: #3b3b3b;
+  --ring: #9333EA;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
