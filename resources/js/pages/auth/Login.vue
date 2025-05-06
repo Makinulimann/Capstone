@@ -1,93 +1,68 @@
-<script setup lang="ts">
-import InputError from '@/components/InputError.vue';
-import TextLink from '@/components/TextLink.vue';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import AuthBase from '@/layouts/AuthLayout.vue';
-import { Head, useForm } from '@inertiajs/vue3';
-import { LoaderCircle } from 'lucide-vue-next';
+<template>
+    <div class="flex h-screen w-screen">
+        <!-- Left Side -->
+        <div class="flex w-1/2 flex-col items-center justify-center bg-[#581C87] text-white">
+            <h1 class="mb-6 text-5xl font-bold tracking-widest">SEKITA</h1>
+            <img src="/images/login.svg" alt="Login Illustration" class="max-w-md" />
+        </div>
 
-defineProps<{
-    status?: string;
-    canResetPassword: boolean;
-}>();
+        <!-- Right Side - Login Form -->
+        <div class="flex w-1/2 items-center justify-center bg-[#581c87]">
+            <div class="w-[400px] rounded-xl bg-white p-10 shadow-xl">
+                <h2 class="mb-2 text-center text-2xl font-bold text-[#581C87]">Masuk</h2>
+                <p class="mb-6 text-center text-sm text-gray-600">Masukkan username dan password untuk melanjutkan progress sertifikasi</p>
 
-const form = useForm({
-    email: '',
-    password: '',
-    remember: false,
-});
+                <!-- Email Field -->
+                <div class="mb-4">
+                    <label class="mb-1 block text-sm font-medium text-[#797F88]">Username or Email</label>
+                    <input
+                        type="email"
+                        placeholder="Masukkan Email"
+                        class="w-full rounded-md border border-gray-300 px-4 py-2 text-[#000000] focus:ring-2 focus:ring-[#581C9C] focus:outline-none"
+                    />
+                </div>
 
-const submit = () => {
-    form.post(route('login'), {
-        onFinish: () => form.reset('password'),
-    });
+                <!-- Password Field -->
+                <div class="mb-4">
+                    <label class="mb-1 block text-sm font-medium text-[#797F88]">Password</label>
+                    <div class="relative">
+                        <input
+                            :type="showPassword ? 'text' : 'password'"
+                            placeholder="Masukkan Password"
+                            class="w-full rounded-md border border-gray-300 px-4 py-2 pr-10 text-[#000000] focus:ring-2 focus:ring-[#581C9C] focus:outline-none"
+                        />
+                        <button @click="togglePassword" class="absolute inset-y-0 right-0 flex items-center pr-3">
+                            <span class="text-sm text-[#581C9C]">{{ showPassword ? 'Hide' : 'Show' }}</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Forgot Password -->
+                <div class="mb-6 text-right">
+                    <a href="#" class="text-sm text-[#581C9C] hover:underline">Lupa password?</a>
+                </div>
+
+                <!-- Sign In Button -->
+                <button class="w-full rounded-md bg-[#581C87] px-4 py-2 text-white transition duration-200 hover:bg-[#4B1B6B]">Sign In</button>
+
+                <!-- Register Link -->
+                <p class="mt-6 text-center text-sm text-[#797F88]">
+                    Belum punya akun?
+                    <a href="#" class="font-semibold text-[#581C9C] hover:underline">Daftar</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+
+const showPassword = ref(false);
+
+const togglePassword = () => {
+    showPassword.value = !showPassword.value;
 };
 </script>
 
-<template>
-    <AuthBase title="Log in to your account" description="Enter your email and password below to log in">
-        <Head title="Log in" />
-
-        <div v-if="status" class="mb-4 text-center text-sm font-medium text-green-600">
-            {{ status }}
-        </div>
-
-        <form @submit.prevent="submit" class="flex flex-col gap-6">
-            <div class="grid gap-6">
-                <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
-                    <Input
-                        id="email"
-                        type="email"
-                        required
-                        autofocus
-                        :tabindex="1"
-                        autocomplete="email"
-                        v-model="form.email"
-                        placeholder="email@example.com"
-                    />
-                    <InputError :message="form.errors.email" />
-                </div>
-
-                <div class="grid gap-2">
-                    <div class="flex items-center justify-between">
-                        <Label for="password">Password</Label>
-                        <TextLink v-if="canResetPassword" :href="route('password.request')" class="text-sm" :tabindex="5">
-                            Forgot password?
-                        </TextLink>
-                    </div>
-                    <Input
-                        id="password"
-                        type="password"
-                        required
-                        :tabindex="2"
-                        autocomplete="current-password"
-                        v-model="form.password"
-                        placeholder="Password"
-                    />
-                    <InputError :message="form.errors.password" />
-                </div>
-
-                <div class="flex items-center justify-between">
-                    <Label for="remember" class="flex items-center space-x-3">
-                        <Checkbox id="remember" v-model="form.remember" :tabindex="3" />
-                        <span>Remember me</span>
-                    </Label>
-                </div>
-
-                <Button type="submit" class="mt-4 w-full" :tabindex="4" :disabled="form.processing">
-                    <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
-                    Log in
-                </Button>
-            </div>
-
-            <div class="text-center text-sm text-muted-foreground">
-                Don't have an account?
-                <TextLink :href="route('register')" :tabindex="5">Sign up</TextLink>
-            </div>
-        </form>
-    </AuthBase>
-</template>
+<style scoped></style>

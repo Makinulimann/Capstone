@@ -6,7 +6,10 @@
             <div class="flex items-center space-x-6">
                 <a href="#" class="hover:underline">Panduan</a>
                 <a href="#" class="hover:underline">Dashboard</a>
-                <Button variant="secondary">Login</Button>
+                <router-link to="/login">
+                    <Button variant="secondary">Login</Button>
+                </router-link>
+
             </div>
         </nav>
 

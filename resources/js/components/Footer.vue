@@ -5,7 +5,7 @@
                 <h2 class="mb-4 text-2xl font-bold">SEKITA</h2>
             </div>
 
-            <div class="text-end">
+            <div class="md:text-end text-start mt-4 md:mt-0">
                 <h3 class="mb-2 font-semibold">Help and Guidance</h3>
                 <ul>
                     <li><a href="#" class="hover:underline">Bantuan</a></li>
@@ -14,7 +14,7 @@
                 </ul>
             </div>
 
-            <div class="text-end">
+            <div class="md:text-end text-start mt-4 md:mt-0">
                 <h3 class="mb-2 font-semibold">Connect</h3>
                 <ul>
                     <li><a href="#" class="hover:underline">Tentang Sekita</a></li>
@@ -24,7 +24,7 @@
                 </ul>
             </div>
 
-            <div class="text-end">
+            <div class="md:text-end text-start mt-4 md:mt-0">
                 <h3 class="mb-2 font-semibold">Follow Us</h3>
                 <ul>
                     <li><a href="#" class="hover:underline">Facebook</a></li>
