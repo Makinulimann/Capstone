@@ -1,0 +1,34 @@
+<?php
+
+use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\PengajuanMasukController;
+use App\Http\Controllers\PengajuanController;
+use App\Http\Controllers\DashboardController;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
+
+Route::middleware('guest')->group(function () {
+    Route::get('/', function () {
+        return Inertia::render('Welcome');
+    })->name('home');
+});
+
+Route::middleware(['auth', 'verified', 'role:dosen'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/track', [DashboardController::class, 'track'])->name('dashboard.track');
+
+    Route::get('/pengajuan', [PengajuanController::class, 'create'])->name('pengajuan.create');
+    Route::post('/pengajuan', [PengajuanController::class, 'store'])->name('pengajuan.store');
+    Route::get('/sertifikasi', [PengajuanController::class, 'index'])->name('sertifikasi.index');
+});
+
+Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
+    Route::get('/admin/dashboardadmin', [AdminController::class, 'index'])->name('dashboardAdmin');
+    Route::get('/admin/users', [AdminController::class, 'users'])->name('admin.users');
+    Route::post('/admin/users/{id}', [AdminController::class, 'update'])->name('admin.users.update');
+    Route::delete('/admin/users/{id}', [AdminController::class, 'destroy'])->name('admin.users.destroy');
+    Route::get('/admin/pengajuan', [PengajuanMasukController::class, 'index'])->name('admin.pengajuan');
+});
+
+require __DIR__ . '/settings.php';
+require __DIR__ . '/auth.php';
