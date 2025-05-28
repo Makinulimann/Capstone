@@ -1,24 +1,47 @@
 <script setup lang="ts">
+import SertifikasiTable from '@/components/SertifikasiTable.vue';
 import Button from '@/components/ui/button/Button.vue';
 import { Input } from '@/components/ui/input';
 import { Stepper, StepperDescription, StepperIndicator, StepperItem, StepperSeparator, StepperTitle, StepperTrigger } from '@/components/ui/stepper';
 import AppLayout from '@/layouts/AppLayout.vue';
-import SertifikasiTable from '@/components/SertifikasiTable.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 
 const page = usePage();
 const userName = computed(() => page.props.auth.user?.name || 'Pengguna');
-const pengajuans = computed(() => page.props.pengajuans || []);
-const pagination = computed(() => page.props.pagination || {
-    current_page: 1,
-    last_page: 1,
-    per_page: 5,
-    total: 0,
-    from: 0,
-    to: 0,
+const pengajuans = computed(() => {
+    const rawPengajuans = page.props.pengajuans?.data || page.props.pengajuans || [];
+    return rawPengajuans.map((item) => ({
+        id: item.id,
+        tanggal_pengajuan: item.tanggal_pengajuan,
+        nama_kegiatan: item.nama,
+        tingkat: item.tingkat,
+        status: item.status,
+        last_update: item.last_update,
+        catatan: item.catatan,
+    }));
 });
+
+watch(
+    pengajuans,
+    (newValue) => {
+        console.log('Data pengajuans:', newValue);
+    },
+    { immediate: true },
+);
+
+const pagination = computed(
+    () =>
+        page.props.pagination || {
+            current_page: 1,
+            last_page: 1,
+            per_page: 5,
+            total: 0,
+            from: 0,
+            to: 0,
+        },
+);
 const search = ref(page.props.search || '');
 const sort = ref(page.props.sort || 'created_at');
 const direction = ref(page.props.direction || 'desc');
@@ -31,6 +54,15 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/dashboard',
     },
 ];
+
+watch(
+    () => page.props.pengajuan,
+    (newValue) => {
+        pengajuan.value = newValue;
+        console.log('Pengajuan updated:', newValue); // Debug pengajuan data
+    },
+    { immediate: true },
+);
 
 const form = useForm({
     search: '',
@@ -113,8 +145,12 @@ const getActiveStep = computed(() => {
 // Menentukan apakah step sudah completed, active, atau pending
 const getStepState = (stepNumber: number) => {
     const currentStep = getActiveStep.value;
+    const state = stepNumber < currentStep ? 'completed' : stepNumber === currentStep ? 'active' : 'pending';
+    if (currentStep === 0) return 'pending'; // Handling no data explicitly after main logic
 
-    if (currentStep === 0) return 'pending'; // Tidak ada data
+    // For debugging:
+    console.log(`Step: ${stepNumber}, Current Active Step: ${currentStep}, Calculated State: ${state}`);
+
     if (stepNumber < currentStep) return 'completed';
     if (stepNumber === currentStep) return 'active';
     return 'pending';
@@ -145,7 +181,7 @@ const getStepStatus = (stepNumber: number) => {
 
         case 4:
             if (stepState === 'active') {
-                return status === 'disetujui' ? 'Pengajuan Disetujui ✅' : 'Pengajuan Ditolak ❌';
+                return status === 'disetujui' ? 'Pengajuan Disetujui' : 'Pengajuan Ditolak';
             }
             return 'Menunggu keputusan final';
 
@@ -166,13 +202,7 @@ const getStepStatus = (stepNumber: number) => {
             <!-- Search Section -->
             <div class="flex flex-col gap-4">
                 <div class="flex w-full max-w-md gap-2">
-                    <Input
-                        v-model="searchTerm"
-                        type="text"
-                        placeholder="Masukkan nama kegiatan..."
-                        class="flex-1"
-                        @keyup.enter="fetchPengajuan"
-                    />
+                    <Input v-model="searchTerm" type="text" placeholder="Masukkan nama kegiatan..." class="flex-1" @keyup.enter="fetchPengajuan" />
                     <Button @click="fetchPengajuan" variant="default" :disabled="form.processing">
                         {{ form.processing ? 'Mencari...' : 'Lacak Status' }}
                     </Button>
@@ -194,7 +224,10 @@ const getStepStatus = (stepNumber: number) => {
                     <div v-if="pengajuan" class="mb-4">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Status Pengajuan: {{ pengajuan.nama }}</h3>
                         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                            Status saat ini: <span class="font-medium">{{ pengajuan.status.replace(/_/g, ' ').toUpperCase() }}</span>
+                            Status saat ini:
+                            <span class="font-bold text-blue-500">
+                                {{ pengajuan.status.replace(/_/g, ' ').toUpperCase() }}
+                            </span>
                         </p>
                     </div>
 
@@ -203,9 +236,9 @@ const getStepStatus = (stepNumber: number) => {
                             <StepperTrigger>
                                 <StepperIndicator
                                     :class="{
-                                        'bg-green-500 text-white': getStepState(1) === 'completed',
-                                        'animate-pulse bg-blue-500 text-white': getStepState(1) === 'active',
-                                        'bg-gray-300 text-gray-500': getStepState(1) === 'pending',
+                                        'bg-green-500! text-white!': getStepState(1) === 'completed',
+                                        'animate-pulse bg-blue-500! text-white!': getStepState(1) === 'active',
+                                        'bg-gray-300! text-gray-500!': getStepState(1) === 'pending',
                                     }"
                                 >
                                     <span v-if="getStepState(1) === 'completed'">✓</span>
@@ -214,18 +247,18 @@ const getStepStatus = (stepNumber: number) => {
                                 <div class="text-left">
                                     <StepperTitle
                                         :class="{
-                                            'text-green-600': getStepState(1) === 'completed',
-                                            'font-semibold text-blue-600': getStepState(1) === 'active',
-                                            'text-gray-500': getStepState(1) === 'pending',
+                                            'text-green-600!': getStepState(1) === 'completed',
+                                            'font-semibold text-blue-600!': getStepState(1) === 'active',
+                                            'text-gray-500!': getStepState(1) === 'pending',
                                         }"
                                     >
                                         Proses Admin
                                     </StepperTitle>
                                     <StepperDescription
                                         :class="{
-                                            'text-green-600': getStepState(1) === 'completed',
-                                            'text-blue-600': getStepState(1) === 'active',
-                                            'text-gray-400': getStepState(1) === 'pending',
+                                            'text-green-600!': getStepState(1) === 'completed',
+                                            'text-blue-600!': getStepState(1) === 'active',
+                                            'text-gray-400!': getStepState(1) === 'pending',
                                         }"
                                     >
                                         {{ getStepStatus(1) }}
@@ -234,8 +267,8 @@ const getStepStatus = (stepNumber: number) => {
                             </StepperTrigger>
                             <StepperSeparator
                                 :class="{
-                                    'bg-green-300': getStepState(1) === 'completed',
-                                    'bg-gray-300': getStepState(1) !== 'completed',
+                                    'bg-green-300!': getStepState(1) === 'completed',
+                                    'bg-gray-300!': getStepState(1) !== 'completed',
                                 }"
                             />
                         </StepperItem>
@@ -244,9 +277,9 @@ const getStepStatus = (stepNumber: number) => {
                             <StepperTrigger>
                                 <StepperIndicator
                                     :class="{
-                                        'bg-green-500 text-white': getStepState(2) === 'completed',
-                                        'animate-pulse bg-blue-500 text-white': getStepState(2) === 'active',
-                                        'bg-gray-300 text-gray-500': getStepState(2) === 'pending',
+                                        'bg-green-500! text-white!': getStepState(2) === 'completed',
+                                        'animate-pulse bg-blue-500! text-white!': getStepState(2) === 'active',
+                                        'bg-gray-300! text-gray-500!': getStepState(2) === 'pending',
                                     }"
                                 >
                                     <span v-if="getStepState(2) === 'completed'">✓</span>
@@ -255,18 +288,18 @@ const getStepStatus = (stepNumber: number) => {
                                 <div class="text-left">
                                     <StepperTitle
                                         :class="{
-                                            'text-green-600': getStepState(2) === 'completed',
-                                            'font-semibold text-blue-600': getStepState(2) === 'active',
-                                            'text-gray-500': getStepState(2) === 'pending',
+                                            'text-green-600!': getStepState(2) === 'completed',
+                                            'font-semibold text-blue-600!': getStepState(2) === 'active',
+                                            'text-gray-500!': getStepState(2) === 'pending',
                                         }"
                                     >
                                         Verifikasi KU
                                     </StepperTitle>
                                     <StepperDescription
                                         :class="{
-                                            'text-green-600': getStepState(2) === 'completed',
-                                            'text-blue-600': getStepState(2) === 'active',
-                                            'text-gray-400': getStepState(2) === 'pending',
+                                            'text-green-600!': getStepState(2) === 'completed',
+                                            'text-blue-600!': getStepState(2) === 'active',
+                                            'text-gray-400!': getStepState(2) === 'pending',
                                         }"
                                     >
                                         {{ getStepStatus(2) }}
@@ -275,8 +308,8 @@ const getStepStatus = (stepNumber: number) => {
                             </StepperTrigger>
                             <StepperSeparator
                                 :class="{
-                                    'bg-green-300': getStepState(2) === 'completed',
-                                    'bg-gray-300': getStepState(2) !== 'completed',
+                                    'bg-green-300!': getStepState(2) === 'completed',
+                                    'bg-gray-300!': getStepState(2) !== 'completed',
                                 }"
                             />
                         </StepperItem>
@@ -285,9 +318,9 @@ const getStepStatus = (stepNumber: number) => {
                             <StepperTrigger>
                                 <StepperIndicator
                                     :class="{
-                                        'bg-green-500 text-white': getStepState(3) === 'completed',
-                                        'animate-pulse bg-blue-500 text-white': getStepState(3) === 'active',
-                                        'bg-gray-300 text-gray-500': getStepState(3) === 'pending',
+                                        'bg-green-500! text-white!': getStepState(3) === 'completed',
+                                        'animate-pulse bg-blue-500! text-white!': getStepState(3) === 'active',
+                                        'bg-gray-300! text-gray-500!': getStepState(3) === 'pending',
                                     }"
                                 >
                                     <span v-if="getStepState(3) === 'completed'">✓</span>
@@ -296,18 +329,18 @@ const getStepStatus = (stepNumber: number) => {
                                 <div class="text-left">
                                     <StepperTitle
                                         :class="{
-                                            'text-green-600': getStepState(3) === 'completed',
-                                            'font-semibold text-blue-600': getStepState(3) === 'active',
-                                            'text-gray-500': getStepState(3) === 'pending',
+                                            'text-green-600!': getStepState(3) === 'completed',
+                                            'font-semibold text-blue-600!': getStepState(3) === 'active',
+                                            'text-gray-500!': getStepState(3) === 'pending',
                                         }"
                                     >
                                         Verifikasi Wadek
                                     </StepperTitle>
                                     <StepperDescription
                                         :class="{
-                                            'text-green-600': getStepState(3) === 'completed',
-                                            'text-blue-600': getStepState(3) === 'active',
-                                            'text-gray-400': getStepState(3) === 'pending',
+                                            'text-green-600!': getStepState(3) === 'completed',
+                                            'text-blue-600!': getStepState(3) === 'active',
+                                            'text-gray-400!': getStepState(3) === 'pending',
                                         }"
                                     >
                                         {{ getStepStatus(3) }}
@@ -316,8 +349,8 @@ const getStepStatus = (stepNumber: number) => {
                             </StepperTrigger>
                             <StepperSeparator
                                 :class="{
-                                    'bg-green-300': getStepState(3) === 'completed',
-                                    'bg-gray-300': getStepState(3) !== 'completed',
+                                    'bg-green-300!': getStepState(3) === 'completed',
+                                    'bg-gray-300!': getStepState(3) !== 'completed',
                                 }"
                             />
                         </StepperItem>
@@ -326,9 +359,9 @@ const getStepStatus = (stepNumber: number) => {
                             <StepperTrigger>
                                 <StepperIndicator
                                     :class="{
-                                        'bg-green-500 text-white': getStepState(4) === 'active' && pengajuan?.status === 'disetujui',
-                                        'bg-red-500 text-white': getStepState(4) === 'active' && pengajuan?.status === 'ditolak',
-                                        'bg-gray-300 text-gray-500': getStepState(4) === 'pending',
+                                        'bg-green-600! text-white!': getStepState(4) === 'active' && pengajuan?.status === 'disetujui',
+                                        'bg-red-500! text-white!': getStepState(4) === 'active' && pengajuan?.status === 'ditolak',
+                                        'bg-gray-300! text-gray-500!': getStepState(4) === 'pending',
                                     }"
                                 >
                                     <span v-if="getStepState(4) === 'active' && pengajuan?.status === 'disetujui'">✓</span>
@@ -338,16 +371,16 @@ const getStepStatus = (stepNumber: number) => {
                                 <div class="text-left">
                                     <StepperTitle
                                         :class="{
-                                            'text-green-600': getStepState(4) === 'active' && pengajuan?.status === 'disetujui',
-                                            'text-red-600': getStepState(4) === 'active' && pengajuan?.status === 'ditolak',
-                                            'text-gray-500': getStepState(4) === 'pending',
+                                            'text-green-600!': getStepState(4) === 'active' && pengajuan?.status === 'disetujui',
+                                            'text-red-600!': getStepState(4) === 'active' && pengajuan?.status === 'ditolak',
+                                            'text-gray-500!': getStepState(4) === 'pending',
                                         }"
                                     >
                                         Keputusan Final
                                     </StepperTitle>
                                     <StepperDescription
                                         :class="{
-                                            'text-green-600': getStepState(4) === 'active' && pengajuan?.status === 'disetujui',
+                                            'text-green-600!': getStepState(4) === 'active' && pengajuan?.status === 'disetujui',
                                             'text-red-600': getStepState(4) === 'active' && pengajuan?.status === 'ditolak',
                                             'text-gray-400': getStepState(4) === 'pending',
                                         }"
@@ -364,12 +397,7 @@ const getStepStatus = (stepNumber: number) => {
             <!-- Recent Pengajuans Section -->
             <div class="mt-8">
                 <h2 class="text-xl font-semibold">Riwayat Pengajuan Terbaru</h2>
-                <SertifikasiTable
-                    :data="pengajuans"
-                    :sort="sort"
-                    :direction="direction"
-                    @sort="updateSort"
-                />
+                <SertifikasiTable :data="pengajuans" :sort="sort" :direction="direction" @sort="updateSort" />
             </div>
         </div>
     </AppLayout>

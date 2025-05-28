@@ -151,6 +151,7 @@ class PengajuanController extends Controller
             'pengajuan' => $pengajuan ? [
                 'id' => $pengajuan->id,
                 'nama' => $pengajuan->nama,
+                'nama_kegiatan' => $pengajuan->nama_kegiatan,
                 'status' => $pengajuan->status,
                 'catatan' => $pengajuan->catatan ?? '-',
             ] : null,
