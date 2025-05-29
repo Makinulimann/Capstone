@@ -33,6 +33,5 @@ Route::middleware(['auth', 'verified', 'role:admin,kepala_unit,wakil_dekan'])->g
     Route::post('/admin/pengajuan/{id}/note', [PengajuanMasukController::class, 'addNote'])->name('admin.pengajuan.note');
 });
 
-// Additional Route Files
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
