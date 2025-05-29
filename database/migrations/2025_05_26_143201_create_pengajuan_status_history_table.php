@@ -26,7 +26,7 @@ return new class extends Migration
                 ->comment('Foreign key to users table')
                 ->name('fk_pengajuan_status_history_user_id');
             $table->enum('role', ['admin', 'kepala_unit', 'wakil_dekan'])->index();
-            $table->enum('status', ['diproses_admin', 'verifikasi_ku', 'verifikasi_wd', 'pengesahan', 'disetujui', 'ditolak']);
+            $table->enum('status', ['diproses_admin', 'verifikasi_ku', 'pengesahan', 'disetujui', 'ditolak']);
             $table->text('catatan')->nullable();
             $table->decimal('anggaran', 10, 2)->nullable()->comment('Updated budget if changed');
             $table->timestamp('updated_at')->useCurrent();

@@ -31,17 +31,36 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
-    
+
         $request->session()->regenerate();
-    
+
         $user = Auth::user();
-        Log::info('User role after login: ' . $user->role);
-    
+
+        if (!$user || !isset($user->role)) {
+            Log::error('User authentication failed or role not set', [
+                'user_id' => $user?->id,
+                'role' => $user?->role ?? 'not set',
+            ]);
+            return redirect()->route('welcome')->with('error', 'Unable to authenticate user.');
+        }
+
+        Log::info('Login redirect decision', [
+            'user_id' => $user->id,
+            'role' => $user->role,
+            'redirect_to' => $user->role === 'dosen' ? 'dashboard' : 'dashboardAdmin',
+        ]);
+
         if ($user->role === 'dosen') {
             return redirect()->route('dashboard');
+        } elseif (in_array($user->role, ['admin', 'kepala_unit', 'wakil_dekan'])) {
+            return redirect()->route('dashboardAdmin');
         }
-    
-        return redirect()->route('dashboardAdmin');
+
+        Log::warning('Unexpected user role', [
+            'user_id' => $user->id,
+            'role' => $user->role,
+        ]);
+        return redirect()->route('welcome')->with('error', 'Invalid user role.');
     }
 
     /**

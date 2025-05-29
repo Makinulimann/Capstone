@@ -49,7 +49,7 @@ const adminNavItems: NavItem[] = [
 const verifikatorNavItems: NavItem[] = [
     {
         title: 'Dashboard',
-        href: '/admin/dashboardAdmin',
+        href: '/admin/dashboardadmin',
         icon: LayoutGrid,
     },
     {

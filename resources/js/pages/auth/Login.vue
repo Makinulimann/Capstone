@@ -31,7 +31,7 @@ const submit = () => {
     <div class="flex h-screen w-screen">
         <div class="flex w-1/2 flex-col items-center justify-center bg-primary text-white">
             <h1 class="mb-6 text-5xl font-bold tracking-widest">SEKITA</h1>
-            <img src="/images/login.svg" alt="Login Illustration" class="max-w-md" />
+            <img src="/images/hero.svg" alt="Login Illustration" class="max-w-md" />
         </div>
 
         <div class="flex w-1/2 items-center justify-center bg-primary">

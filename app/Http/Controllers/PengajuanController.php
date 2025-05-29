@@ -98,7 +98,7 @@ class PengajuanController extends Controller
                     'tingkat' => $item->tingkat ?? 'N/A',
                     'status' => $item->status,
                     'last_update' => $item->updated_at->format('Y-m-d H:i:s'),
-                    'catatan' => $item->catatan ?? '-',
+                    'catatan' => $item->catatan ?? null,
                 ];
             }),
             'pagination' => [

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import PengajuanTable from '@/components/PengajuanTable.vue'; // Updated component
+import PengajuanTable from '@/components/PengajuanTable.vue';
 import Pagination from '@/components/Pagination.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage, useForm } from '@inertiajs/vue3';
@@ -10,17 +10,52 @@ import { Search } from 'lucide-vue-next';
 
 // Reactive props
 const page = usePage();
-const pengajuans = computed(() => page.props.pengajuans || { data: [] });
-const pagination = computed(() => page.props.pagination || {
+const props = defineProps<{
+    auth: {
+        user: any;
+        role: string;
+    };
+    pengajuans: { data: any[] };
+    pagination: {
+        current_page: number;
+        last_page: number;
+        from: number;
+        to: number;
+        total: number;
+    };
+    search: string;
+    sort: string;
+    direction: string;
+}>();
+
+const pengajuans = computed(() => props.pengajuans || { data: [] });
+const pagination = computed(() => props.pagination || {
     current_page: 1,
     last_page: 1,
     from: 0,
     to: 0,
     total: 0,
 });
-const search = ref(page.props.search || '');
-const sort = ref(page.props.sort || 'created_at');
-const direction = ref(page.props.direction || 'desc');
+const search = ref(props.search || '');
+const sort = ref(props.sort || 'created_at');
+const direction = ref(props.direction || 'desc');
+
+// Get flash message
+const flash = computed(() => page.props.flash || {});
+
+// Dynamically set the status description based on role
+const statusDescription = computed(() => {
+    switch (props.auth.role) {
+        case 'admin':
+            return 'Diproses Admin';
+        case 'kepala_unit':
+            return 'Diproses Kepala Unit';
+        case 'wakil_dekan':
+            return 'Pengesahan';
+        default:
+            return 'Unknown Status';
+    }
+});
 
 // Breadcrumbs for navigation
 const breadcrumbs: BreadcrumbItem[] = [
@@ -29,7 +64,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/admin/dashboardadmin',
     },
     {
-        title: 'Manajemen Akun',
+        title: 'Pengajuan Masuk',
         href: '/admin/pengajuan',
     },
 ];
@@ -50,7 +85,7 @@ const fetchData = () => {
     form.search = search.value;
     form.get(route('admin.pengajuan'), {
         preserveScroll: true,
-        only: ['pengajuans', 'pagination', 'search', 'sort', 'direction'],
+        only: ['auth', 'pengajuans', 'pagination', 'search', 'sort', 'direction'],
         data: { sort: sort.value, direction: direction.value, search: search.value },
     });
 };
@@ -58,7 +93,7 @@ const fetchData = () => {
 const changePage = (page: number) => {
     form.get(route('admin.pengajuan', { page }), {
         preserveScroll: true,
-        only: ['pengajuans', 'pagination', 'search', 'sort', 'direction'],
+        only: ['auth', 'pengajuans', 'pagination', 'search', 'sort', 'direction'],
     });
 };
 
@@ -79,7 +114,9 @@ watch(search, () => {
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div>
                             <h1 class="text-xl sm:text-2xl font-semibold">Pengajuan Masuk</h1>
-                            <p class="text-xs sm:text-sm mt-1">Kelola pengajuan sertifikasi dengan status "Diproses Admin"</p>
+                            <p class="text-xs sm:text-sm mt-1">
+                                Kelola pengajuan sertifikasi dengan status "{{ statusDescription }}"
+                            </p>
                         </div>
                         
                         <!-- Search Bar -->
@@ -94,6 +131,10 @@ watch(search, () => {
                                 class="pl-9 sm:pl-10 pr-4 py-1 sm:py-2 w-full text-xs sm:text-sm"
                             />
                         </div>
+                    </div>
+                    <!-- Display flash message -->
+                    <div v-if="flash.success" class="mt-4 p-2 bg-green-100 text-green-800 rounded">
+                        {{ flash.success }}
                     </div>
                 </div>
 
