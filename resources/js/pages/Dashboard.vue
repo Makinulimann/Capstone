@@ -1,10 +1,4 @@
 <script setup lang="ts">
-<<<<<<< HEAD
-import AppLayout from '@/layouts/AppLayout.vue';
-import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/vue3';
-import PlaceholderPattern from '../components/PlaceholderPattern.vue';
-=======
 import SertifikasiTable from '@/components/SertifikasiTable.vue';
 import Button from '@/components/ui/button/Button.vue';
 import { Input } from '@/components/ui/input';
@@ -13,16 +7,10 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 
->>>>>>> Back-End
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Dashboard',
-<<<<<<< HEAD
-        href: '/dashboard',
-    },
-];
-=======
         href: route('dashboardAdmin'),
     },
 ];
@@ -193,29 +181,12 @@ const getStepStatus = (stepNumber: number) => {
             return '';
     }
 };
->>>>>>> Back-End
 </script>
 
 <template>
     <Head title="Dashboard" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-<<<<<<< HEAD
-        <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-            <div class="grid auto-rows-min gap-4 md:grid-cols-3">
-                <div class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                    <PlaceholderPattern />
-                </div>
-                <div class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                    <PlaceholderPattern />
-                </div>
-                <div class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                    <PlaceholderPattern />
-                </div>
-            </div>
-            <div class="relative min-h-[100vh] flex-1 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border md:min-h-min">
-                <PlaceholderPattern />
-=======
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-6 relative">
             <!-- Announcement Section (Top Right) -->
             <div v-if="latestStatusUpdate" class="absolute top-6 right-6 w-72 bg-blue-100 p-4 rounded-lg shadow-md z-10">
@@ -413,13 +384,10 @@ const getStepStatus = (stepNumber: number) => {
             <div class="mt-8">
                 <h2 class="text-xl font-semibold">Riwayat Pengajuan Terbaru</h2>
                 <SertifikasiTable :data="pengajuans" :sort="sort" :direction="direction" @sort="updateSort" />
->>>>>>> Back-End
             </div>
         </div>
     </AppLayout>
 </template>
-<<<<<<< HEAD
-=======
 
 <style scoped>
 .status-flow-container {
@@ -554,4 +522,3 @@ const getStepStatus = (stepNumber: number) => {
     100% { background-position: 24px 0; }
 }
 </style>
->>>>>>> Back-End

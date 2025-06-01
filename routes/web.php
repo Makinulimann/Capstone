@@ -1,6 +1,4 @@
 <?php
-
-<<<<<<< HEAD
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -11,7 +9,6 @@ Route::get('/', function () {
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
-=======
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\PengajuanMasukController;
 use App\Http\Controllers\DashboardController;
@@ -47,4 +44,3 @@ Route::middleware(['auth', 'verified', 'role:admin,kepala_unit,wakil_dekan'])->g
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
->>>>>>> Back-End
