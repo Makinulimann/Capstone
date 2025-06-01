@@ -9,7 +9,7 @@ export const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          'bg-primary textwhite shadow-md hover:bg-primary/90 active:bg-primary/80 active:scale-98', // Tambah scale saat active
+          'bg-primary text-white shadow-md hover:bg-primary/90 active:bg-primary/80 active:scale-98', // Tambah scale saat active
         destructive:
           'bg-destructive text-white shadow-md hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60 active:bg-destructive/80 active:scale-98', // Tambah scale saat active
         outline:

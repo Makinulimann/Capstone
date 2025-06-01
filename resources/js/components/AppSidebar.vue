@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-vue-next';
+import { usePage } from '@inertiajs/vue3';
+import { Award, FileInput, FilePlus, LayoutGrid, UserCog } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
+
+const { auth } = usePage().props;
+const userRole = auth?.user?.role;
 
 const mainNavItems: NavItem[] = [
     {
@@ -14,20 +16,54 @@ const mainNavItems: NavItem[] = [
         href: '/dashboard',
         icon: LayoutGrid,
     },
+    {
+        title: 'Pengajuan',
+        href: '/pengajuan',
+        icon: FilePlus,
+    },
+    {
+        title: 'Sertifikasi',
+        href: '/sertifikasi',
+        icon: Award,
+    },
 ];
 
-const footerNavItems: NavItem[] = [
+const adminNavItems: NavItem[] = [
     {
-        title: 'Github Repo',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: Folder,
+        title: 'Dashboard',
+        href: '/admin/dashboardadmin',
+        icon: LayoutGrid,
     },
     {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits',
-        icon: BookOpen,
+        title: 'Manajemen Akun',
+        href: '/admin/users',
+        icon: UserCog,
+    },
+    {
+        title: 'Pengajuan Masuk',
+        href: '/admin/pengajuan',
+        icon: FileInput,
     },
 ];
+
+const verifikatorNavItems: NavItem[] = [
+    {
+        title: 'Dashboard',
+        href: '/admin/dashboardadmin',
+        icon: LayoutGrid,
+    },
+    {
+        title: 'Pengajuan Masuk',
+        href: '/admin/pengajuan',
+        icon: FileInput,
+    },
+];
+
+const roleBasedNavItem = userRole === 'admin' 
+    ? [...adminNavItems] 
+    : (userRole === 'kepala_unit' || userRole === 'wakil_dekan') 
+    ? [...verifikatorNavItems] 
+    : [...mainNavItems];
 </script>
 
 <template>
@@ -35,21 +71,16 @@ const footerNavItems: NavItem[] = [
         <SidebarHeader>
             <SidebarMenu>
                 <SidebarMenuItem>
-                    <SidebarMenuButton size="lg" as-child>
-                        <Link :href="route('dashboard')">
-                            <AppLogo />
-                        </Link>
-                    </SidebarMenuButton>
+                    <AppLogo />
                 </SidebarMenuItem>
             </SidebarMenu>
         </SidebarHeader>
 
         <SidebarContent>
-            <NavMain :items="mainNavItems" />
+            <NavMain :items="roleBasedNavItem" />
         </SidebarContent>
 
         <SidebarFooter>
-            <NavFooter :items="footerNavItems" />
             <NavUser />
         </SidebarFooter>
     </Sidebar>

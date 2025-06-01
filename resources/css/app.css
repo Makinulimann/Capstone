@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 @import 'tw-animate-css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -7,87 +8,168 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: Roboto, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
-    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Roboto', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
-  --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-sm: calc(var(--radius) - 4px);
+    --radius-lg: var(--radius);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-sm: calc(var(--radius) - 4px);
 
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
 
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
 
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
 
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
 
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+
+    --color-sidebar: var(--sidebar-background);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
 }
 
 @layer base {
-  *, ::after, ::before, ::backdrop, ::file-selector-button {
-    border-color: var(--color-gray-200, currentColor);
-  }
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentColor);
+    }
 }
 
 @layer utilities {
-  body, html {
-    --font-sans: Roboto, ui-sans-serif, system-ui, sans-serif,
-      'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-      'Noto Color Emoji';
-  }
+    body,
+    html {
+        --font-sans:
+            'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    }
 }
 
 :root {
-  --background: #ffffff;
-  --foreground: #1a1a1a;
-
-  --primary: #581C87; /* ungu tua */
-  --primary-foreground: #ffffff;
-
-  --secondary: #9333EA; /* ungu terang */
-  --secondary-foreground: #ffffff;
-
-  --muted: #797F88; /* abu-abu kebiruan */
-  --muted-foreground: #ffffff;
-
-  --border: #d1d5db;
-  --input: #e5e7eb;
-  --ring: #581C87;
-
-  --radius: 0.5rem;
+    --background: hsl(0 0% 100%); /* White background */
+    --foreground: hsl(0 0% 4%); /* Example HSL for a very dark grey */
+    --card: hsl(0 0% 100%); /* White cards */
+    --card-foreground: hsl(270 50% 38%); /* #581C87 for card text */
+    --popover: hsl(0 0% 100%); /* White popover */
+    --popover-foreground: hsl(0 0% 38%); /* #581C87 for popover text */
+    --primary: hsl(270 50% 38%); /* #581C87 for primary elements */
+    --primary-foreground: hsl(0 0% 100%); /* White text on primary */
+    --secondary: hsl(270 50% 81%); /* #C9A9FF for secondary elements */
+    --secondary-foreground: hsl(0 0% 18%); /* #581C87 for secondary text */
+    --muted: hsl(270 50% 90%); /* Lighter purple for muted elements */
+    --muted-foreground: hsl(0 0% 48%); /* #581C87 for muted text */
+    --accent: hsl(270 50% 81%); /* #C9A9FF for accents */
+    --accent-foreground: hsl(0 0% 38%); /* #581C87 for accent text */
+    --destructive: hsl(0 84.2% 60.2%); /* Keep red for destructive actions */
+    --destructive-foreground: hsl(0 0% 100%); /* White text on destructive */
+    --border: hsl(270 50% 81%); /* #C9A9FF for borders */
+    --input: hsl(270 50% 90%); /* Lighter purple for inputs */
+    --ring: hsl(270 50% 38%); /* #581C87 for focus rings */
+    --chart-1: hsl(270 50% 38%); /* #581C87 for charts */
+    --chart-2: hsl(270 50% 81%); /* #C9A9FF for charts */
+    --chart-3: hsl(270 50% 60%); /* A middle purple for charts */
+    --chart-4: hsl(270 50% 70%); /* Another purple shade for charts */
+    --chart-5: hsl(270 50% 50%); /* Another purple shade for charts */
+    --radius: 0.5rem;
+    --sidebar-background: hsl(270 50% 38%); /* #581C87 for sidebar */
+    --sidebar-foreground: hsl(0 0% 100%); /* White text in sidebar */
+    --sidebar-primary: hsl(270 50% 50%); /* Slightly lighter purple for sidebar primary */
+    --sidebar-primary-foreground: hsl(0 0% 100%); /* White text */
+    --sidebar-accent: hsl(270 50% 81%); /* #C9A9FF for sidebar accents */
+    --sidebar-accent-foreground: hsl(270 50% 38%); /* #581C87 for accent text */
+    --sidebar-border: hsl(270 50% 81%); /* #C9A9FF for sidebar borders */
+    --sidebar-ring: hsl(270 50% 38%); /* #581C87 for sidebar focus rings */
+    --sidebar: hsl(270 50% 38%); /* #581C87 for sidebar */
 }
 
 .dark {
-  --background: #1a1a1a;
-  --foreground: #ffffff;
+    --background: hsl(270 50% 15%); /* Darker purple for dark mode background */
+    --foreground: hsl(0 0% 100%); /* White text */
+    --card: hsl(270 50% 20%); /* Slightly lighter purple for cards */
+    --card-foreground: hsl(0 0% 100%); /* White text on cards */
+    --popover: hsl(270 50% 20%); /* Slightly lighter purple for popovers */
+    --popover-foreground: hsl(0 0% 100%); /* White text */
+    --primary: hsl(270 100% 70%); /* #C9A9FF for primary elements in dark mode */
+    --primary-foreground: hsl(270 50% 38%); /* #581C87 for primary text */
+    --secondary: hsl(270 50% 30%); /* Darker purple for secondary elements */
+    --secondary-foreground: hsl(0 0% 100%); /* White text */
+    --muted: hsl(270 50% 25%); /* Darker purple for muted elements */
+    --muted-foreground: hsl(0 0% 80%); /* Lighter white for muted text */
+    --accent: hsl(270 50% 30%); /* Darker purple for accents */
+    --accent-foreground: hsl(0 0% 100%); /* White text */
+    --destructive: hsl(0 84% 60%); /* Keep red for destructive actions */
+    --destructive-foreground: hsl(0 0% 100%); /* White text */
+    --border: hsl(270 50% 30%); /* Darker purple for borders */
+    --input: hsl(270 50% 25%); /* Darker purple for inputs */
+    --ring: hsl(270 50% 81%); /* #C9A9FF for focus rings */
+    --chart-1: hsl(270 50% 81%); /* #C9A9FF for charts */
+    --chart-2: hsl(270 50% 38%); /* #581C87 for charts */
+    --chart-3: hsl(270 50% 60%); /* Middle purple for charts */
+    --chart-4: hsl(270 50% 70%); /* Another purple shade for charts */
+    --chart-5: hsl(270 50% 50%); /* Another purple shade for charts */
+    --sidebar-background: hsl(270 50% 25%); /* Darker purple for sidebar */
+    --sidebar-foreground: hsl(0 0% 100%); /* White text */
+    --sidebar-primary: hsl(270 50% 81%); /* #C9A9FF for sidebar primary */
+    --sidebar-primary-foreground: hsl(270 50% 38%); /* #581C87 for sidebar primary text */
+    --sidebar-accent: hsl(270 50% 30%); /* Darker purple for sidebar accents */
+    --sidebar-accent-foreground: hsl(0 0% 100%); /* White text */
+    --sidebar-border: hsl(270 50% 30%); /* Darker purple for sidebar borders */
+    --sidebar-ring: hsl(270 50% 81%); /* #C9A9FF for sidebar focus rings */
+    --sidebar: hsl(270 50% 25%); /* Darker purple for sidebar */
+}
 
-  --primary: #9333EA;
-  --primary-foreground: #1a1a1a;
-
-  --secondary: #581C87;
-  --secondary-foreground: #ffffff;
-
-  --muted: #797F88;
-  --muted-foreground: #ffffff;
-
-  --border: #2d2d2d;
-  --input: #3b3b3b;
-  --ring: #9333EA;
+.stepper-separator {
+    height: 2px; /* Atur tinggi garis */
+    background-color: var(--color-border); /* Gunakan warna border dari tema */
+    margin: 0 auto; /* Pusatkan garis */
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+    * {
+        @apply border-border;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
 }

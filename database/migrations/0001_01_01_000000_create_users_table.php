@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -14,7 +15,13 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('email')->unique();
+            $table->string('nidn', 15)->unique()->check("'nidn' REGEXP '^[0-9]{15}$'")->comment('15-digit NIDN');
+            $table->string('email')->unique()->index();
+            $table->string('photo')->nullable(); // Path to photo
+            $table->string('department')->nullable()
+                ->check("department IN ('Teknik Informatika', 'Sistem Informasi') OR department IS NULL")
+                ->comment('Derived from first 2 digits of NIDN: 11=TI, 12=SI');
+            $table->enum('role', ['dosen', 'admin', 'kepala_unit', 'wakil_dekan'])->default('dosen')->index();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
