@@ -9,6 +9,7 @@ import { Trash2, Edit2, Search } from 'lucide-vue-next';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import Pagination from '@/components/Pagination.vue';
+import { toast } from 'vue-sonner'; // Import toast
 
 // Reactive references for props
 const page = usePage();
@@ -44,10 +45,12 @@ const updateRole = (userId: number) => {
     });
     form.post(route('admin.users.update', userId), {
         preserveScroll: true,
-        onSuccess: () => alert('Role updated successfully'),
+        onSuccess: () => {
+            toast.success('Role berhasil diperbarui!', { duration: 3000 });
+        },
         onError: (errors) => {
             console.log(errors);
-            alert('Failed to update role: ' + Object.values(errors).join(', '));
+            toast.error('Gagal memperbarui role: ' + Object.values(errors).join(', '), { duration: 5000 });
         },
     });
 };
@@ -56,8 +59,12 @@ const deleteUser = (userId: number) => {
     if (confirm('Are you sure you want to delete this user?')) {
         useForm().delete(route('admin.users.destroy', userId), {
             preserveScroll: true,
-            onSuccess: () => alert('User deleted successfully'),
-            onError: (errors) => alert('Failed to delete user: ' + Object.values(errors).join(', ')),
+            onSuccess: () => {
+                toast.success('Pengguna berhasil dihapus!', { duration: 3000 });
+            },
+            onError: (errors) => {
+                toast.error('Gagal menghapus pengguna: ' + Object.values(errors).join(', '), { duration: 5000 });
+            },
         });
     }
 };
@@ -71,9 +78,8 @@ const changePage = (page: number) => {
         },
         preserveState: true,
         preserveScroll: true,
-        replace: true, // Ensure URL updates without adding to history
+        replace: true,
         onSuccess: () => {
-            // Ensure roles are updated after page change
             users.value.data.forEach((user: any) => {
                 selectedRoles.value[user.id] = user.role;
             });
@@ -87,7 +93,7 @@ watch(search, (newSearch) => {
         method: 'get',
         data: {
             search: newSearch,
-            page: 1, // Reset to first page on search
+            page: 1,
         },
         preserveState: true,
         preserveScroll: true,

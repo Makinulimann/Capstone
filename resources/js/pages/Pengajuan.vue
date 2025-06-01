@@ -8,6 +8,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import { toast } from 'vue-sonner'; // Import toast for notifications
 
 const form = useForm({
     nama: '',
@@ -35,7 +36,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 // Track selected kategori to toggle bukti input
 const selectedKategori = ref(form.kategori);
 
-const updateKategori = (value: 'Pemohonan' | 'Reimburse') => {
+const updateKategori = (value: 'Pemohon' | 'Reimburse') => {
     form.kategori = value;
     selectedKategori.value = value;
     if (value === 'Pemohonan') {
@@ -58,6 +59,35 @@ const handleBuktiChange = (event: Event) => {
 const submit = () => {
     form.post('/pengajuan', {
         forceFormData: true, // Ensure files are sent as FormData
+        onSuccess: () => {
+            toast.success('Pengajuan berhasil disubmit!', {
+                duration: 3000,
+            });
+            // Reset form fields
+            form.reset();
+            form.nama = '';
+            form.tingkat = null;
+            form.lokasi = '';
+            form.kategori = 'Pemohonan';
+            form.periodeMulai = null;
+            form.periodeSelesai = null;
+            form.deskripsi = '';
+            form.proposal = null;
+            form.bukti = null;
+            // Reset file inputs
+            const proposalInput = document.getElementById('proposal') as HTMLInputElement;
+            const buktiInput = document.getElementById('bukti') as HTMLInputElement;
+            if (proposalInput) proposalInput.value = '';
+            if (buktiInput) buktiInput.value = '';
+        },
+        onError: (errors) => {
+            const errorMessages = Object.values(errors).flat();
+            if (errorMessages.length > 0) {
+                toast.error(errorMessages[0], {
+                    duration: 5000,
+                });
+            }
+        },
     });
 };
 </script>
@@ -97,7 +127,6 @@ const submit = () => {
                                     <option value="Nasional">Nasional</option>
                                     <option value="Internasional">Internasional</option>
                                     <option value="BNSP">BNSP</option>
-                                    <option value="Regional">Regional</option>
                                 </select>
                                 <InputError :message="form.errors.tingkat" class="text-destructive text-sm" />
                             </div>

@@ -72,7 +72,7 @@ class PengajuanController extends Controller
             ->select('id', 'nama', 'tingkat', 'status', 'created_at', 'updated_at', 'catatan')
             ->when($request->search, function ($query, $search) {
                 $query->where('nama', 'like', "%{$search}%")
-                      ->orWhere('tingkat', 'like', "%{$search}%");
+                    ->orWhere('tingkat', 'like', "%{$search}%");
             });
 
         // Apply sorting

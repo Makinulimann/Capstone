@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
+import { toast } from 'vue-sonner'; // Import only toast, not Toaster
 
 defineProps<{
     status?: string;
@@ -23,6 +24,19 @@ const form = useForm({
 const submit = () => {
     form.post(route('login'), {
         onFinish: () => form.reset('password'),
+        onSuccess: () => {
+            toast.success('Login successful! Redirecting...', {
+                duration: 3000,
+            });
+        },
+        onError: (errors) => {
+            const errorMessages = Object.values(errors).flat();
+            if (errorMessages.length > 0) {
+                toast.error(errorMessages[0], {
+                    duration: 5000,
+                });
+            }
+        },
     });
 };
 </script>

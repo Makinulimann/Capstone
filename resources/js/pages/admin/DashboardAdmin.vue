@@ -18,7 +18,7 @@ const page = usePage();
 const props = defineProps<{
     auth: {
         user: any;
-        role: string | null; // Add role to the auth prop
+        role: string | null;
     };
     users: { data: any[]; current_page: number };
     paginationUsers: {
@@ -49,6 +49,10 @@ const props = defineProps<{
     directionPengajuan: string;
     pengajuanByMonth: number[];
     pengajuanByStatus: Record<string, number>;
+    budgetByApproval: {
+        approved: number;
+        not_approved: number;
+    };
 }>();
 </script>
 
@@ -63,6 +67,7 @@ const props = defineProps<{
                         <StatsCard title="Statistik Pengguna" type="stats" :data="usersSummary" />
                         <StatsCard title="Pengajuan per Bulan" type="bar" :data="pengajuanByMonth" />
                         <StatsCard title="Pengajuan berdasarkan Status" type="pie" :data="pengajuanByStatus" />
+                        <StatsCard title="Anggaran berdasarkan Status" type="donut" :data="budgetByApproval" />
                     </div>
 
                     <!-- Show Daftar Pengguna only for admin role -->

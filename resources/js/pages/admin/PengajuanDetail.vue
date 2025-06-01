@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button';
-import AppLayout from '@/layouts/AppLayout.vue';
-import { useForm } from '@inertiajs/vue3';
 import HeadingSmall from '@/components/HeadingSmall.vue';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { computed } from 'vue';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { useForm } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
+import { toast } from 'vue-sonner';
 
 const props = defineProps<{
     auth: {
@@ -56,50 +57,86 @@ const statusOptions = computed(() => {
     }
 });
 
-// Initialize form with anggaran field
 const form = useForm({
     status: props.pengajuan.status,
-    catatan: props.pengajuan.catatan || '',
+    catatan: props.pengajuan.catatan || null,
     anggaran: props.pengajuan.anggaran || null,
+    proposal: null as File | null,
 });
 
 const periodeKegiatan = computed(() => {
     const start = props.pengajuan.periodeMulai || '-';
     const end = props.pengajuan.periodeSelesai || '-';
-    return `${start} hingga ${end}`;
+    return `${start} sampai ${end}`;
 });
 
+const showProposalUpload = computed(() => props.auth.role === 'wakil_dekan' && form.status === 'disetujui');
+const proposalFile = ref<File | null>(null);
+
 const saveChanges = () => {
-    // Client-side validation
-    if (form.status === 'ditolak' && !form.catatan.trim()) {
-        alert('Catatan wajib diisi jika status ditolak.');
+    // Validation checks
+    if (form.status === 'ditolak' && !form.catatan?.trim()) {
+        toast.error('Catatan wajib diisi jika status ditolak.', { duration: 5000 });
         return;
     }
     if (props.auth.role === 'admin' && form.status === 'verifikasi_ku') {
         if (!form.anggaran || form.anggaran <= 0) {
-            alert('Anggaran wajib diisi dan harus lebih dari 0 jika status diubah menjadi Verifikasi KU.');
+            toast.error('Anggaran wajib diisi dan harus lebih dari 0 jika status diubah menjadi Verifikasi KU.', { duration: 5000 });
             return;
         }
     }
+    if (showProposalUpload.value && !proposalFile.value) {
+        toast.error('Dokumen proposal yang telah ditandatangani wajib diunggah untuk status Disetujui.', { duration: 5000 });
+        return;
+    }
+
+    // Prepare FormData
+    const formData = new FormData();
+    formData.append('status', form.status || '');
+    if (form.catatan) formData.append('catatan', form.catatan);
+    if (form.anggaran) formData.append('anggaran', form.anggaran.toString());
+    if (proposalFile.value) {
+        formData.append('proposal', proposalFile.value);
+        form.proposal = proposalFile.value; // Update form.proposal to sync with backend
+    }
+
+    formData.append('_method', 'PUT');
+
+    // Debugging: Log FormData contents
+    for (const pair of formData.entries()) {
+        console.log(`${pair[0]}: ${pair[1]}`);
+    }
 
     form.post(`/admin/pengajuan/${props.pengajuan.id}/update`, {
+        data: formData,
         preserveScroll: true,
+        forceFormData: true, // Ensure Inertia uses FormData
         onSuccess: () => {
-            // Redirect is handled server-side, no need for local alert
+            toast.success('Pengajuan berhasil diperbarui!', { duration: 3000 });
+            proposalFile.value = null; // Reset file input after successful submission
         },
         onError: (errors) => {
-            console.log(errors);
-            if (errors.status) {
-                alert('Invalid status: ' + errors.status);
-            }
-            if (errors.catatan) {
-                alert('Catatan error: ' + errors.catatan);
-            }
-            if (errors.anggaran) {
-                alert('Anggaran error: ' + errors.anggaran);
-            }
+            console.log('Submission Errors:', errors);
+            if (errors.status) toast.error(`Invalid status: ${errors.status}`, { duration: 5000 });
+            if (errors.catatan) toast.error(`Catatan error: ${errors.catatan}`, { duration: 5000 });
+            if (errors.anggaran) toast.error(`Anggaran error: ${errors.anggaran}`, { duration: 5000 });
+            if (errors.proposal) toast.error(`Proposal error: ${errors.proposal}`, { duration: 5000 });
         },
     });
+};
+
+const handleFileDrop = (event: DragEvent) => {
+    event.preventDefault();
+    if (event.dataTransfer?.files) {
+        proposalFile.value = event.dataTransfer.files[0];
+    }
+};
+
+const handleFileInput = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    if (target.files) {
+        proposalFile.value = target.files[0];
+    }
 };
 
 const getTingkatVariant = (tingkat: string) => {
@@ -146,14 +183,13 @@ const getKategoriVariant = (kategori: string) => {
                     </div>
                     <div>
                         <HeadingSmall title="Periode Kegiatan" />
-                        <Input :value="periodeKegiatan" readonly class="mt-1" />
+                        <Input v-model="periodeKegiatan" readonly class="mt-1" />
                     </div>
                     <div>
                         <HeadingSmall title="Anggaran" />
-                        <!-- Show readonly for non-admin roles, editable for admin -->
                         <Input
                             v-if="auth.role !== 'admin'"
-                            :value="pengajuan.anggaran ? `Rp ${pengajuan.anggaran.toLocaleString()}` : '-'"
+                            :model-value="pengajuan.anggaran ? `Rp ${pengajuan.anggaran.toLocaleString()}` : '-'"
                             readonly
                             class="mt-1"
                         />
@@ -163,7 +199,9 @@ const getKategoriVariant = (kategori: string) => {
                             type="number"
                             placeholder="Masukkan anggaran (wajib jika Verifikasi KU)"
                             class="mt-1"
-                            :class="{ 'border-red-300': auth.role === 'admin' && form.status === 'verifikasi_ku' && (!form.anggaran || form.anggaran <= 0) }"
+                            :class="{
+                                'border-red-300': auth.role === 'admin' && form.status === 'verifikasi_ku' && (!form.anggaran || form.anggaran <= 0),
+                            }"
                         />
                     </div>
                     <div>
@@ -174,13 +212,11 @@ const getKategoriVariant = (kategori: string) => {
                     <!-- Attachments -->
                     <div>
                         <HeadingSmall title="Lampiran" />
-                        <div class="flex gap-2 mt-1.5">
+                        <div class="mt-1.5 flex gap-2">
                             <Button v-if="pengajuan.proposal" variant="default" as="a" :href="pengajuan.proposal" target="_blank">
                                 Lihat Proposal
                             </Button>
-                            <Button v-if="pengajuan.bukti" variant="default" as="a" :href="pengajuan.bukti" target="_blank">
-                                Lihat Bukti
-                            </Button>
+                            <Button v-if="pengajuan.bukti" variant="default" as="a" :href="pengajuan.bukti" target="_blank"> Lihat Bukti </Button>
                         </div>
                     </div>
 
@@ -211,7 +247,7 @@ const getKategoriVariant = (kategori: string) => {
                     <!-- User Information -->
                     <div class="col-span-1 md:col-span-2">
                         <HeadingSmall title="Identitas Pemohon" />
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-1">
+                        <div class="mt-1 grid grid-cols-1 gap-3 md:grid-cols-3">
                             <div>
                                 <HeadingSmall title="Nama" />
                                 <Input v-model="pengajuan.user.name" readonly />
@@ -237,9 +273,29 @@ const getKategoriVariant = (kategori: string) => {
                         <Input v-model="pengajuan.updated_at" readonly />
                     </div>
 
+                    <!-- Proposal Upload for Wakil Dekan -->
+                    <div v-if="showProposalUpload">
+                        <HeadingSmall title="Unggah Proposal yang Ditandatangani" />
+                        <div
+                            class="mt-1 flex h-20 w-full items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 text-gray-500 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600"
+                            @dragover.prevent
+                            @dragenter.prevent
+                            @drop.prevent="handleFileDrop"
+                            @click="$refs.fileInput.click()"
+                        >
+                            <input type="file" ref="fileInput" class="hidden" accept=".pdf,.doc,.docx" @change="handleFileInput" />
+                            <div class="flex flex-col items-center">
+                                <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                                <p class="text-sm">Drag and drop files here to add them.</p>
+                            </div>
+                        </div>
+                        <p v-if="proposalFile" class="mt-2 text-sm text-gray-600 dark:text-gray-400">Selected file: {{ proposalFile.name }}</p>
+                    </div>
                     <!-- Admin Actions -->
-                    <div class="col-span-1 md:col-span-2 mt-4">
-                        <div class="flex gap-2 mt-1">
+                    <div class="col-span-1 mt-4 md:col-span-2">
+                        <div class="mt-1 flex gap-2">
                             <Button variant="default" class="w-full" @click="saveChanges">Save</Button>
                         </div>
                     </div>

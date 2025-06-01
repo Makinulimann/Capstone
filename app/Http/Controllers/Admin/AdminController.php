@@ -88,11 +88,9 @@ class AdminController extends Controller
             ->pluck('count', 'month')
             ->toArray();
 
-        // Create an array of 12 months, filled with 0
         $months = array_fill(0, 12, 0);
-        // Map query results to the correct month index (0-based for array)
         foreach ($pengajuanByMonth as $month => $count) {
-            $months[$month - 1] = $count; // Adjust month (1-12) to array index (0-11)
+            $months[$month - 1] = $count;
         }
 
         // --- Pengajuan by Status ---
@@ -102,6 +100,21 @@ class AdminController extends Controller
             ->pluck('count', 'status')
             ->toArray();
 
+        // --- Budget (Anggaran) by Approval Status ---
+        $budgetByApproval = Pengajuan::select(
+            DB::raw('SUM(anggaran) as total'),
+            DB::raw('CASE WHEN status = "disetujui" THEN "approved" ELSE "not_approved" END as approval_status')
+        )
+            ->whereNotNull('anggaran')
+            ->groupBy('approval_status')
+            ->get()
+            ->pluck('total', 'approval_status')
+            ->toArray();
+
+        // Ensure both categories exist, default to 0 if no data
+        $budgetApproved = $budgetByApproval['approved'] ?? 0;
+        $budgetNotApproved = $budgetByApproval['not_approved'] ?? 0;
+
         // Get the authenticated user and their role
         $user = auth()->user();
         $userRole = $user ? $user->role : null;
@@ -109,7 +122,7 @@ class AdminController extends Controller
         return Inertia::render('admin/DashboardAdmin', [
             'auth' => [
                 'user' => $user,
-                'role' => $userRole, // Explicitly pass the role
+                'role' => $userRole,
             ],
             'users' => $paginatedUsers,
             'paginationUsers' => [
@@ -140,6 +153,10 @@ class AdminController extends Controller
             'directionPengajuan' => $directionPengajuan,
             'pengajuanByMonth' => $months,
             'pengajuanByStatus' => $pengajuanByStatus,
+            'budgetByApproval' => [
+                'approved' => $budgetApproved,
+                'not_approved' => $budgetNotApproved,
+            ],
         ]);
     }
 

@@ -4,17 +4,18 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Pengajuan;
+use App\Models\PengajuanStatusHistory;
 use Illuminate\Http\Request;
 use Inertia\Response;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use App\Notifications\PengajuanStatusUpdated;
 
 class PengajuanMasukController extends Controller
 {
     public function index(Request $request): Response
     {
-        // Determine the status filter based on the user's role
         $userRole = Auth::user()->role;
         $statusFilter = match ($userRole) {
             'admin' => 'diproses_admin',
@@ -23,7 +24,6 @@ class PengajuanMasukController extends Controller
             default => abort(403, 'Unauthorized role for this page.'),
         };
 
-        // Log the status filter for debugging
         Log::info('Fetching pengajuan data for role', [
             'role' => $userRole,
             'status_filter' => $statusFilter,
@@ -45,7 +45,6 @@ class PengajuanMasukController extends Controller
                 });
             });
 
-        // Apply sorting
         $sort = $request->sort ?? 'created_at';
         $direction = $request->direction ?? 'desc';
         if ($sort === 'nama') {
@@ -65,10 +64,7 @@ class PengajuanMasukController extends Controller
         $pengajuans = $query->paginate(10)->withQueryString();
 
         return Inertia::render('admin/Pengajuan', [
-            'auth' => [
-                'user' => Auth::user(),
-                'role' => $userRole,
-            ],
+            'auth' => ['user' => Auth::user(), 'role' => $userRole],
             'pengajuans' => $pengajuans->through(function ($item) {
                 return [
                     'id' => $item->id,
@@ -106,10 +102,7 @@ class PengajuanMasukController extends Controller
         $pengajuan = Pengajuan::with('user')->findOrFail($id);
 
         return Inertia::render('admin/PengajuanDetail', [
-            'auth' => [
-                'user' => Auth::user(),
-                'role' => $userRole,
-            ],
+            'auth' => ['user' => Auth::user(), 'role' => $userRole],
             'pengajuan' => [
                 'id' => $pengajuan->id,
                 'nama' => $pengajuan->nama,
@@ -143,48 +136,84 @@ class PengajuanMasukController extends Controller
             return response()->json(['message' => 'Unauthorized role to update status.'], 403);
         }
 
-        // Define allowed statuses for each role
         $allowedStatuses = [
             'admin' => ['diproses_admin', 'verifikasi_ku', 'ditolak'],
             'kepala_unit' => ['verifikasi_ku', 'pengesahan', 'ditolak'],
             'wakil_dekan' => ['pengesahan', 'disetujui', 'ditolak'],
         ];
 
-        // Validation rules
         $rules = [
             'status' => ['required', 'in:' . implode(',', $allowedStatuses[$userRole])],
             'catatan' => ['nullable', 'string', 'max:1000'],
         ];
 
-        // Add conditional validation for anggaran and catatan
         $rules['catatan'][] = $request->status === 'ditolak' ? 'required' : 'nullable';
         if ($userRole === 'admin' && $request->status === 'verifikasi_ku') {
             $rules['anggaran'] = ['required', 'integer', 'min:1'];
         }
+        if ($userRole === 'wakil_dekan' && $request->status === 'disetujui') {
+            $rules['proposal'] = ['required', 'file', 'mimes:pdf,doc,docx', 'max:2048'];
+        }
 
-        $validatedData = $request->validate($rules);
+        try {
+            $validatedData = $request->validate($rules);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validation failed for pengajuan update', [
+                'errors' => $e->errors(),
+                'request' => $request->all(),
+                'user_id' => Auth::id(),
+                'role' => $userRole,
+            ]);
+            throw $e;
+        }
 
         $pengajuan = Pengajuan::findOrFail($id);
+        $originalStatus = $pengajuan->status;
         $pengajuan->status = $validatedData['status'];
         $pengajuan->catatan = $validatedData['catatan'] ?? $pengajuan->catatan;
 
-        // Update anggaran if provided (for admin role)
         if (isset($validatedData['anggaran'])) {
             $pengajuan->anggaran = $validatedData['anggaran'];
         }
 
+        // Handle proposal upload and replace existing file
+        if ($request->hasFile('proposal')) {
+            // Delete the old proposal file if it exists
+            if ($pengajuan->proposal && file_exists(storage_path('app/public/' . $pengajuan->proposal))) {
+                unlink(storage_path('app/public/' . $pengajuan->proposal));
+            }
+
+            $file = $request->file('proposal');
+            $fileName = time() . '_' . $file->getClientOriginalName();
+            $file->storeAs('proposals', $fileName, 'public');
+            $pengajuan->proposal = 'proposals/' . $fileName;
+        }
+
         $pengajuan->save();
+
+        if ($originalStatus !== $validatedData['status']) {
+            PengajuanStatusHistory::create([
+                'pengajuan_id' => $id,
+                'user_id' => Auth::id(),
+                'role' => $userRole,
+                'status' => $validatedData['status'],
+                'catatan' => $validatedData['catatan'],
+                'anggaran' => $validatedData['anggaran'] ?? null,
+            ]);
+        }
 
         Log::info('Pengajuan updated', [
             'id' => $id,
             'status' => $validatedData['status'],
             'catatan' => $validatedData['catatan'] ?? null,
             'anggaran' => $validatedData['anggaran'] ?? null,
+            'proposal' => $request->hasFile('proposal') ? $fileName : $pengajuan->proposal,
             'user_id' => Auth::id(),
             'role' => $userRole,
         ]);
 
-        // Redirect to the pengajuan list page
+        $pengajuan->user->notify(new PengajuanStatusUpdated($pengajuan, $validatedData['status'], $validatedData['catatan']));
+
         return redirect()->route('admin.pengajuan')->with('success', 'Status updated successfully.');
     }
 

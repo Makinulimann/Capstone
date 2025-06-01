@@ -127,7 +127,7 @@ watch(search, () => {
                             <Input
                                 v-model="search"
                                 type="text"
-                                plxceholder="Cari pengajuan..."
+                                placeholder="Cari pengajuan..."
                                 class="w-full py-1 pr-4 pl-9 text-xs sm:py-2 sm:pl-10 sm:text-sm"
                             />
                         </div>

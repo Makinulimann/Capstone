@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
+import { Toaster, toast } from 'vue-sonner';
 
 const form = useForm({
     name: '',
@@ -19,6 +20,19 @@ const form = useForm({
 const submit = () => {
     form.post(route('register'), {
         onFinish: () => form.reset('password', 'password_confirmation'),
+        onSuccess: () => {
+            toast.success('Registration successful! Redirecting...', {
+                duration: 3000,
+            });
+        },
+        onError: (errors) => {
+            const errorMessages = Object.values(errors).flat();
+            if (errorMessages.length > 0) {
+                toast.error(errorMessages[0], {
+                    duration: 5000,
+                });
+            }
+        },
     });
 };
 </script>
@@ -61,7 +75,7 @@ const submit = () => {
 
                     <div class="grid gap-2">
                         <Label for="nidn">NIDN</Label>
-                        <Input id="nidn" type="text" required autofocus :tabindex="1" autocomplete="nidn" v-model="form.nidn" placeholder="NIDN" />
+                        <Input id="nidn" type="text" required autofocus :tabindex="3" autocomplete="nidn" v-model="form.nidn" placeholder="NIDN" />
                         <InputError :message="form.errors.nidn" />
                     </div>
 
@@ -71,7 +85,7 @@ const submit = () => {
                             id="password"
                             type="password"
                             required
-                            :tabindex="3"
+                            :tabindex="4"
                             autocomplete="new-password"
                             v-model="form.password"
                             placeholder="Password"
@@ -85,7 +99,7 @@ const submit = () => {
                             id="password_confirmation"
                             type="password"
                             required
-                            :tabindex="4"
+                            :tabindex="5"
                             autocomplete="new-password"
                             v-model="form.password_confirmation"
                             placeholder="Confirm password"
@@ -93,7 +107,7 @@ const submit = () => {
                         <InputError :message="form.errors.password_confirmation" />
                     </div>
 
-                    <Button type="submit" class="mt-2 w-full" tabindex="5" :disabled="form.processing">
+                    <Button type="submit" class="mt-2 w-full" tabindex="6" :disabled="form.processing">
                         <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
                         Create account
                     </Button>
@@ -101,9 +115,12 @@ const submit = () => {
 
                 <div class="text-muted-foreground text-center text-sm">
                     Already have an account?
-                    <TextLink :href="route('login')" class="underline underline-offset-4" :tabindex="6">Log in</TextLink>
+                    <TextLink :href="route('login')" class="underline underline-offset-4 text-primary" :tabindex="7">Log in</TextLink>
                 </div>
             </form>
+
+            <!-- Include Toaster component -->
+            <Toaster />
         </AuthBase>
     </div>
 </template>

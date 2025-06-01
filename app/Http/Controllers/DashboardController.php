@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pengajuan;
+use App\Models\PengajuanStatusHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -10,10 +11,8 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        // Fetch pengajuans for the authenticated user
         $query = Pengajuan::where('user_id', Auth::id());
 
-        // Apply search filter if provided
         if ($request->has('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
@@ -24,19 +23,18 @@ class DashboardController extends Controller
             });
         }
 
-        // Apply sorting
         $sort = $request->input('sort', 'created_at');
         $direction = $request->input('direction', 'desc');
         $query->orderBy($sort, $direction);
 
-        // Paginate the results
         $pengajuans = $query->paginate(5)->withQueryString();
 
-        // Return the Inertia response
+        $latestStatusUpdate = PengajuanStatusHistory::where('user_id', Auth::id())
+            ->orderBy('updated_at', 'desc')
+            ->first();
+
         return inertia('Dashboard', [
-            'auth' => [
-                'user' => auth()->user(),
-            ],
+            'auth' => ['user' => auth()->user()],
             'pengajuans' => $pengajuans->map(function ($item) {
                 return [
                     'id' => $item->id,
@@ -59,22 +57,28 @@ class DashboardController extends Controller
             'search' => $request->input('search', ''),
             'sort' => $sort,
             'direction' => $direction,
+            'latestStatusUpdate' => $latestStatusUpdate ? [
+                'pengajuan_id' => $latestStatusUpdate->pengajuan_id,
+                'role' => $latestStatusUpdate->role,
+                'status' => $latestStatusUpdate->status,
+                'catatan' => $latestStatusUpdate->catatan,
+                'anggaran' => $latestStatusUpdate->anggaran,
+                'updated_at' => $latestStatusUpdate->updated_at->format('Y-m-d H:i'),
+            ] : null,
         ]);
     }
 
+    // Ensure track method is consistent if used
     public function track(Request $request)
     {
-        // Search for a specific pengajuan by name
         $search = trim($request->input('search'));
 
         $pengajuan = Pengajuan::where('user_id', Auth::id())
             ->whereRaw('LOWER(nama) LIKE ?', ['%' . strtolower($search) . '%'])
             ->first();
 
-        // Fetch the list of pengajuans for the table
         $query = Pengajuan::where('user_id', Auth::id());
 
-        // Apply search filter for the table (if any)
         if ($request->has('search')) {
             $tableSearch = $request->input('search');
             $query->where(function ($q) use ($tableSearch) {
@@ -85,19 +89,18 @@ class DashboardController extends Controller
             });
         }
 
-        // Apply sorting for the table
         $sort = $request->input('sort', 'created_at');
         $direction = $request->input('direction', 'desc');
         $query->orderBy($sort, $direction);
 
-        // Paginate the results for the table
         $pengajuans = $query->paginate(5)->withQueryString();
 
-        // Return the Inertia response
+        $latestStatusUpdate = PengajuanStatusHistory::where('user_id', Auth::id())
+            ->orderBy('updated_at', 'desc')
+            ->first();
+
         return inertia('Dashboard', [
-            'auth' => [
-                'user' => auth()->user(),
-            ],
+            'auth' => ['user' => auth()->user()],
             'pengajuan' => $pengajuan ? [
                 'id' => $pengajuan->id,
                 'nama' => $pengajuan->nama,
@@ -116,6 +119,14 @@ class DashboardController extends Controller
             'search' => $request->input('search', ''),
             'sort' => $sort,
             'direction' => $direction,
+            'latestStatusUpdate' => $latestStatusUpdate ? [
+                'pengajuan_id' => $latestStatusUpdate->pengajuan_id,
+                'role' => $latestStatusUpdate->role,
+                'status' => $latestStatusUpdate->status,
+                'catatan' => $latestStatusUpdate->catatan,
+                'anggaran' => $latestStatusUpdate->anggaran,
+                'updated_at' => $latestStatusUpdate->updated_at->format('Y-m-d H:i'),
+            ] : null,
         ]);
     }
 }
