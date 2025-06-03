@@ -1,14 +1,5 @@
 <?php
-use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('LandingPage'); 
-})->name('LandingPage');
-
-
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\PengajuanMasukController;
 use App\Http\Controllers\DashboardController;
@@ -19,7 +10,9 @@ use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 // Guest Routes
-Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
+Route::middleware(['guest'])->group(function () {
+    Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
+});
 
 // Dosen Routes
 Route::middleware(['auth', 'verified', 'role:dosen'])->group(function () {

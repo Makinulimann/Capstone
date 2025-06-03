@@ -44,8 +44,13 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
+        // Login user setelah registrasi
+        Auth::login($user);
+
+        // Trigger event untuk mengirim email verifikasi
         event(new Registered($user));
 
-        return to_route('login');
+        // Redirect ke halaman verify email
+        return redirect()->route('verification.notice');
     }
 }

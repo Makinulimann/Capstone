@@ -44,9 +44,16 @@ class AuthenticatedSessionController extends Controller
             return redirect()->route('welcome')->with('error', 'Unable to authenticate user.');
         }
 
+        // Cek apakah email sudah diverifikasi
+        if (!$user->hasVerifiedEmail()) {
+            Auth::logout(); // Logout user
+            return redirect()->route('login')->with('error', 'Silakan verifikasi email Anda terlebih dahulu sebelum login.');
+        }
+
         Log::info('Login redirect decision', [
             'user_id' => $user->id,
             'role' => $user->role,
+            'email_verified' => $user->hasVerifiedEmail(),
             'redirect_to' => $user->role === 'dosen' ? 'dashboard' : 'dashboardAdmin',
         ]);
 

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 
 class VerifyEmailController extends Controller
 {
@@ -15,7 +16,9 @@ class VerifyEmailController extends Controller
     public function __invoke(EmailVerificationRequest $request): RedirectResponse
     {
         if ($request->user()->hasVerifiedEmail()) {
-            return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
+            // Jika sudah terverifikasi, logout dan redirect ke login
+            Auth::logout();
+            return redirect()->route('login')->with('status', 'Email sudah terverifikasi. Silakan login.');
         }
 
         if ($request->user()->markEmailAsVerified()) {
@@ -24,6 +27,14 @@ class VerifyEmailController extends Controller
             event(new Verified($user));
         }
 
-        return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
+        // Logout user setelah verifikasi
+        Auth::logout();
+        
+        // Regenerate session untuk keamanan
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        // Redirect ke login dengan pesan sukses
+        return redirect()->route('login')->with('status', 'Email berhasil diverifikasi! Silakan login untuk melanjutkan.');
     }
 }

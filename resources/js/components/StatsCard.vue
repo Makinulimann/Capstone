@@ -206,7 +206,7 @@ const formatNumber = (num: number) => {
 
 // Stats configuration
 const statsConfig = [
-    { key: 'total', label: 'Total Pengguna', icon: '👥', color: 'from-indigo-500 to-indigo-600' },
+    { key: 'total', label: 'Pengguna', icon: '👥', color: 'from-indigo-500 to-indigo-600' },
     { key: 'admins', label: 'Admin', icon: '⚙️', color: 'from-purple-500 to-purple-600' },
     { key: 'dosens', label: 'Dosen', icon: '🎓', color: 'from-emerald-500 to-emerald-600' },
     { key: 'kepalaUnits', label: 'Kepala Unit', icon: '👔', color: 'from-amber-500 to-amber-600' },

@@ -296,7 +296,7 @@ const getKategoriVariant = (kategori: string) => {
                     <!-- Admin Actions -->
                     <div class="col-span-1 mt-4 md:col-span-2">
                         <div class="mt-1 flex gap-2">
-                            <Button variant="default" class="w-full" @click="saveChanges">Save</Button>
+                            <Button variant="default" class="w-full" @click="saveChanges">Simpan Perubahan</Button>
                         </div>
                     </div>
                 </div>
